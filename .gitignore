@@ -348,5 +348,4 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/purescript,node,git,macos,emacs,visualstudiocode,yarn,direnv,linux,sass,vim,windows
 
-*.js
 *.js.map
