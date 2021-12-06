@@ -1,0 +1,33 @@
+name: Code Style
+
+on:
+    pull_request:
+    push:
+        braches:
+            - master
+
+jobs:
+    checks:
+        name: Checks
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: cachix/install-nix-action@v13
+              with:
+                  install_url: https://nixos-nix-install-tests.cachix.org/serve/0f7lh6yrv84dj3a2ar073d1mwrfiflsz/install
+                  install_options: --tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve
+                  extra_nix_config: |
+                      experimental-features = nix-command flakes
+
+            - uses: cachix/cachix-action@v10
+              with:
+                  name: purescript-effectful
+                  authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+            - name: Check
+              run: |
+                  set +e
+                  nix -Lv develop -c pre-commit run --all-files
+                  exitcode=$?
+                  [ $exitcode != 0 ] && git --no-pager diff --color
+                  exit $exitcode
