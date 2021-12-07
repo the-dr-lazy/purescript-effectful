@@ -9,17 +9,17 @@
  */
 
 exports.foreign_mkCustomError = function (r) {
-  var e = new Error("Control.Eff.Except: unhandled exception (" + r.tag + ")");
-  e._tag = r.tag;
-  e._value = r.value;
+    var e = new Error('Control.Eff.Except: unhandled exception (' + r.tag + ')')
+    e._tag = r.tag
+    e._value = r.value
 
-  return e;
-};
+    return e
+}
 
 exports.foreign_parseCustomError = function (r) {
-  if (r.error._tag !== r.tag) {
-    return null;
-  }
+    if (r.error._tag !== r.tag) {
+        return null
+    }
 
-  return r.error._value;
-};
+    return r.error._value
+}
