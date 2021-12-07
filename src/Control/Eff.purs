@@ -43,18 +43,18 @@ newtype Eff r a = UnsafeMk (Environment r -> Aff a)
 type role Eff nominal representational
 
 instance Functor (Eff r) where
-  map f (UnsafeMk m) = UnsafeMk \ref -> map f (m ref)
+  map f (UnsafeMk m) = UnsafeMk \environment -> map f (m environment)
 
 instance Apply (Eff r) where
-  apply (UnsafeMk f) (UnsafeMk m) = UnsafeMk \ref -> apply (f ref) (m ref)
+  apply (UnsafeMk f) (UnsafeMk m) = UnsafeMk \environment -> apply (f environment) (m environment)
 
 instance Applicative (Eff r) where
   pure = unsafeMkFromAff <<< pure
 
 instance Bind (Eff r) where
-  bind (UnsafeMk m) f = UnsafeMk \ref -> do
-    x <- m ref
-    un (f x) ref
+  bind (UnsafeMk m) f = UnsafeMk \environment -> do
+    x <- m environment
+    un (f x) environment
 
 instance Monad (Eff r)
 
