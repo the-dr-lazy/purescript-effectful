@@ -97,11 +97,3 @@ repos:
             files: '\.nix$'
             language: system
             entry: nix-linter
-
-          #############################################
-          # TypeScript
-          - name: Check TypeScript code style with prettier
-            id: prettier-ts
-            files: '\.(ts)$'
-            language: system
-            entry: prettier --write
