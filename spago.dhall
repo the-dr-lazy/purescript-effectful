@@ -27,4 +27,6 @@ to generate this file without the comments in this block.
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
+, license = "MPL-2.0"
+, repository = "https://github.com/the-dr-lazy/purescript-effectful"
 }
