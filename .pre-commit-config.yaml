@@ -97,3 +97,11 @@ repos:
             files: '\.nix$'
             language: system
             entry: nix-linter
+
+          #############################################
+          # JavaScript
+          - name: Check JavaScript code style with prettier
+            id: prettier-js
+            files: '\.js$'
+            language: system
+            entry: prettier --write
