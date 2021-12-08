@@ -27,90 +27,73 @@ import Type.Row (type (+))
 import Type.Row as Row
 import Unsafe.Coerce (unsafeCoerce)
 
-data ExceptF :: Type -> Eff.Algebra
-data ExceptF e m a = Except String a
+data ExceptF :: Row Type -> Eff.Algebra
+data ExceptF es m a
 
-type Except :: Type -> Row Eff.Algebra -> Row Eff.Algebra
-type Except e r = (except :: ExceptF e | r)
+type Except :: Row Type -> Row Eff.Algebra -> Row Eff.Algebra
+type Except es r = (except :: ExceptF es | r)
 
 tag = Proxy :: Proxy "except"
 
-throw :: forall e r a. e -> Eff (Except e + r) a
-throw = throwAt tag
-
-throwAt
-  :: forall tag e r er a
-   . Row.Cons tag (ExceptF e) r er
+throw
+  :: forall tag e s es r
+   . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
   -> e
-  -> Eff er a
-throwAt ptag error = Eff.unsafeMkFromAff (throwError (foreign_mkCustomError { tag: reflectSymbol ptag, value: error }))
+  -> Eff (Except es + r) Unit
+throw ptag error = Eff.unsafeMkFromAff (throwError (foreign_mkCustomError { tag: reflectSymbol ptag, value: error }))
 
 catch
-  :: forall e r a
-   . Eff (Except e + r) a
-  -> (e -> Eff r a)
-  -> Eff r a
-catch = catchAt tag
-
-catchAt
-  :: forall tag e r er a
-   . Row.Cons tag (ExceptF e) r er
+  :: forall tag e s es r a
+   . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
-  -> Eff er a
-  -> (e -> Eff r a)
-  -> Eff r a
-catchAt ptag (Eff.UnsafeMk m) handler = Eff.UnsafeMk \environment ->
+  -> Eff (Except es + r) a
+  -> (e -> Eff (Except s + r) a)
+  -> Eff (Except s + r) a
+catch ptag (Eff.UnsafeMk m) handler = Eff.UnsafeMk \environment ->
   m (unsafeCoerce environment) `catchError` \error -> case parseCustomError ptag error of
     Just e -> Eff.un (handler e) environment
     Nothing -> throwError error
 
-note :: forall e r a. e -> Maybe a -> Eff (Except e + r) a
-note = noteAt tag
+try
+  :: forall tag e s es r a
+   . Row.Cons tag e s es
+  => IsSymbol tag
+  => Proxy tag
+  -> Eff (Except es + r) a
+  -> Eff (Except s + r) (Either e a)
+try ptag m = catch ptag (Right <$> m) (pure <<< Left)
 
-noteAt
-  :: forall tag e r er a
-   . Row.Cons tag (ExceptF e) r er
+note
+  :: forall tag e s es r a
+   . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
   -> e
   -> Maybe a
-  -> Eff er a
-noteAt ptag error = case _ of
-  Nothing -> throwAt ptag error
+  -> Eff (Except es + r) a
+note ptag error = case _ of
+  Nothing -> map unsafeCoerce (throw ptag error)
   Just x -> pure x
 
-rethrow :: forall e r a. Either e a -> Eff (Except e + r) a
-rethrow = rethrowAt tag
-
-rethrowAt
-  :: forall tag e r er a
-   . Row.Cons tag (ExceptF e) r er
+rethrow
+  :: forall tag e s es r a
+   . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
   -> Either e a
-  -> Eff er a
-rethrowAt ptag = case _ of
-  Left error -> throwAt ptag error
+  -> Eff (Except es + r) a
+rethrow ptag = case _ of
+  Left error -> map unsafeCoerce (throw ptag error)
   Right x -> pure x
 
-try :: forall e r a. Eff (Except e + r) a -> Eff r (Either e a)
-try = tryAt tag
 
-tryAt
-  :: forall tag e r er a
-   . Row.Cons tag (ExceptF e) r er
-  => IsSymbol tag
-  => Proxy tag
-  -> Eff er a
-  -> Eff r (Either e a)
-tryAt ptag m = catchAt ptag (Right <$> m) (pure <<< Left)
 
-foreign import foreign_mkCustomError :: forall e. { tag :: String, value :: e } -> Error
+foreign import foreign_mkCustomError :: forall es. { tag :: String, value :: es } -> Error
 
-foreign import foreign_parseCustomError :: forall e. { tag :: String, error :: Error } -> Nullable e
+foreign import foreign_parseCustomError :: forall es. { tag :: String, error :: Error } -> Nullable es
 
-parseCustomError :: forall tag e. IsSymbol tag => Proxy tag -> Error -> Maybe e
+parseCustomError :: forall tag es. IsSymbol tag => Proxy tag -> Error -> Maybe es
 parseCustomError ptag error = Nullable.toMaybe (foreign_parseCustomError { tag: reflectSymbol ptag, error })
