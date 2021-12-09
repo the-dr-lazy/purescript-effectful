@@ -89,7 +89,8 @@ rethrow ptag = case _ of
   Left error -> map unsafeCoerce (throw ptag error)
   Right x -> pure x
 
-
+run :: forall r. Eff (Except () + r) ~> Eff r
+run = unsafeCoerce
 
 foreign import foreign_mkCustomError :: forall es. { tag :: String, value :: es } -> Error
 
