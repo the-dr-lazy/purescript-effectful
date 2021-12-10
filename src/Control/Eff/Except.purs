@@ -36,12 +36,12 @@ type Except es r = (except :: ExceptF es | r)
 tag = Proxy :: Proxy "except"
 
 throw
-  :: forall tag e s es r
+  :: forall tag e s es r a
    . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
   -> e
-  -> Eff (Except es + r) Unit
+  -> Eff (Except es + r) a
 throw ptag error = Eff.unsafeMkFromAff (throwError (foreign_mkCustomError { tag: reflectSymbol ptag, value: error }))
 
 catch
@@ -75,7 +75,7 @@ note
   -> Maybe a
   -> Eff (Except es + r) a
 note ptag error = case _ of
-  Nothing -> map unsafeCoerce (throw ptag error)
+  Nothing -> throw ptag error
   Just x -> pure x
 
 rethrow
@@ -86,7 +86,7 @@ rethrow
   -> Either e a
   -> Eff (Except es + r) a
 rethrow ptag = case _ of
-  Left error -> map unsafeCoerce (throw ptag error)
+  Left error -> throw ptag error
   Right x -> pure x
 
 run :: forall r. Eff (Except () + r) ~> Eff r
