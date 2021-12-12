@@ -49,10 +49,10 @@ catch
    . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
-  -> Eff (Except es + r) a
   -> (e -> Eff (Except s + r) a)
+  -> Eff (Except es + r) a
   -> Eff (Except s + r) a
-catch ptag (Eff.UnsafeMk m) handler = Eff.UnsafeMk \environment ->
+catch ptag handler (Eff.UnsafeMk m) = Eff.UnsafeMk \environment ->
   m (unsafeCoerce environment) `catchError` \error -> case parseCustomError ptag error of
     Just e -> Eff.un (handler e) environment
     Nothing -> throwError error
@@ -64,7 +64,7 @@ try
   => Proxy tag
   -> Eff (Except es + r) a
   -> Eff (Except s + r) (Either e a)
-try ptag m = catch ptag (Right <$> m) (pure <<< Left)
+try ptag m = catch ptag (pure <<< Left) (Right <$> m)
 
 note
   :: forall tag e s es r a
