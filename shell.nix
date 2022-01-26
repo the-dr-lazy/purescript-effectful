@@ -12,7 +12,7 @@ pkgs.stable.mkShell {
     # Languages:
     {
       inherit (pkgs.stable) dhall nodejs-16_x;
-      inherit (pkgs.unstable) purescript;
+      inherit (pkgs.stable) purescript;
       inherit (pkgs.stable.nodePackages) typescript;
     }
 
@@ -26,7 +26,7 @@ pkgs.stable.mkShell {
         nix-linter
         shfmt
         shellcheck;
-      inherit (pkgs.stable.python3Packages) pre-commit-hooks yamllint;
+      inherit (pkgs.unstable.python310Packages) pre-commit-hooks yamllint;
       inherit (pkgs.stable.nodePackages) prettier;
 
       headroom = pkgs.stable.haskell.lib.justStaticExecutables pkgs.stable.haskellPackages.headroom;
@@ -41,11 +41,12 @@ pkgs.stable.mkShell {
     {
       inherit (pkgs.stable.nodePackages)
         bash-language-server
-        purescript-language-server
         typescript-language-server
         vscode-html-languageserver-bin
         vscode-json-languageserver-bin
         yaml-language-server;
+      inherit (pkgs.unstable.nodePackages)
+        purescript-language-server;
     }
 
     ###################################################
