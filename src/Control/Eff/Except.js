@@ -1,6 +1,6 @@
 /*
  * Maintainer : Mohammad Hasani (the-dr-lazy.github.io) <the-dr-lazy@pm.me>
- * Copyright  : (c) 2021 Effecful
+ * Copyright  : (c) 2021-2022 Effecful
  * License    : MPL 2.0
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
