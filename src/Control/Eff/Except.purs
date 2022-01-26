@@ -35,16 +35,19 @@ type Except es r = (except :: ExceptF es | r)
 
 tag = Proxy :: Proxy "except"
 
-throw
+throwAs
   :: forall tag e s es r a
    . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
   -> e
   -> Eff (Except es + r) a
-throw ptag error = Eff.unsafeMkFromAff (throwError (foreign_mkCustomError { tag: reflectSymbol ptag, value: error }))
+throwAs ptag error = Eff.unsafeMkFromAff (throwError (foreign_mkCustomError { tag: reflectSymbol ptag, value: error }))
 
-catch
+throw :: forall e es r a. e -> Eff (Except (error :: e | es) + r) a
+throw = throwAs (Proxy :: Proxy "error")
+
+catchAs
   :: forall tag e s es r a
    . Row.Cons tag e s es
   => IsSymbol tag
@@ -52,21 +55,27 @@ catch
   -> (e -> Eff (Except s + r) a)
   -> Eff (Except es + r) a
   -> Eff (Except s + r) a
-catch ptag handler (Eff.UnsafeMk m) = Eff.UnsafeMk \environment ->
+catchAs ptag handler (Eff.UnsafeMk m) = Eff.UnsafeMk \environment ->
   m (unsafeCoerce environment) `catchError` \error -> case parseCustomError ptag error of
     Just e -> Eff.un (handler e) environment
     Nothing -> throwError error
 
-try
+catch :: forall e s r a. (e -> Eff (Except s + r) a) -> Eff (Except (error :: e | s) + r) a -> Eff (Except s + r) a
+catch = catchAs (Proxy :: Proxy "error")
+
+tryAs
   :: forall tag e s es r a
    . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
   -> Eff (Except es + r) a
   -> Eff (Except s + r) (Either e a)
-try ptag m = catch ptag (pure <<< Left) (Right <$> m)
+tryAs ptag m = catchAs ptag (pure <<< Left) (Right <$> m)
 
-note
+try :: forall e s r a. Eff (Except (error :: e | s) + r) a -> Eff (Except s + r) (Either e a)
+try = tryAs (Proxy :: Proxy "error")
+
+noteAs
   :: forall tag e s es r a
    . Row.Cons tag e s es
   => IsSymbol tag
@@ -74,20 +83,26 @@ note
   -> e
   -> Maybe a
   -> Eff (Except es + r) a
-note ptag error = case _ of
-  Nothing -> throw ptag error
+noteAs ptag error = case _ of
+  Nothing -> throwAs ptag error
   Just x -> pure x
 
-rethrow
+note :: forall e s r a. e -> Maybe a -> Eff (Except (error :: e | s) + r) a
+note = noteAs (Proxy :: Proxy "error")
+
+rethrowAs
   :: forall tag e s es r a
    . Row.Cons tag e s es
   => IsSymbol tag
   => Proxy tag
   -> Either e a
   -> Eff (Except es + r) a
-rethrow ptag = case _ of
-  Left error -> throw ptag error
+rethrowAs ptag = case _ of
+  Left error -> throwAs ptag error
   Right x -> pure x
+
+rethrow :: forall e s r a. Either e a -> Eff (Except (error :: e | s) + r) a
+rethrow = rethrowAs (Proxy :: Proxy "error")
 
 run :: forall r. Eff (Except () + r) ~> Eff r
 run = unsafeCoerce
