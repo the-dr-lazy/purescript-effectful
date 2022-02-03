@@ -20,7 +20,7 @@
         pkgs = {
           stable = import nixpkgs-stable {
             inherit system;
-            overlays = [ (_: _: { inherit (easy-purescript) purs-tidy; purescript = easy-purescript.purs-0_14_5; }) ];
+            overlays = [ (_: _: { inherit (easy-purescript) purs-tidy pulp; purescript = easy-purescript.purs-0_14_5; }) ];
           };
           unstable = import nixpkgs-unstable { inherit system; };
         };

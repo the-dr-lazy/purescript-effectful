@@ -34,7 +34,9 @@ pkgs.stable.mkShell {
 
     ###################################################
     # Command line tools:
-    { inherit (pkgs.stable) gitFull git-lfs; }
+    {
+      inherit (pkgs.stable) gitFull git-lfs pulp;
+    }
 
     ###################################################
     # Language servers:
@@ -51,6 +53,9 @@ pkgs.stable.mkShell {
 
     ###################################################
     # Package managers:
-    { inherit (pkgs.stable) spago; }
+    {
+      inherit (pkgs.stable) spago;
+      inherit (pkgs.unstable.nodePackages) bower;
+    }
   ];
 }

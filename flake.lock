@@ -3,11 +3,11 @@
     "easy-purescript-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1643051731,
-        "narHash": "sha256-GCkaJN4nMs//pcohJJ8789/16utoZwgXpKUcPCzc3m8=",
+        "lastModified": 1643701815,
+        "narHash": "sha256-0o4s6xvsbOrAqSu2ue2fEdSh0TuNXnQpTAIlbVKAkJA=",
         "owner": "justinwoo",
         "repo": "easy-purescript-nix",
-        "rev": "ebf07d08ed55ce2fc2cf871a062474c6ad2b49a3",
+        "rev": "b6d056937dd6851110574462aac92afc77334301",
         "type": "github"
       },
       "original": {
