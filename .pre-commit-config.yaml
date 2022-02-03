@@ -53,6 +53,7 @@ repos:
           - name: Check JSON code style with prettier
             id: prettier-json
             types: [json]
+            exclude: 'bower.json'
             language: system
             entry: prettier --write
 
